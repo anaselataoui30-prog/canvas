@@ -1,0 +1,15 @@
+{
+  "name": "لوحة · Toile — لوحات فنية على القماش",
+  "short_name": "Toile",
+  "description": "لوحات فنية تُطبع عند الطلب في المغرب — اطلب عبر واتساب والدفع عند الاستلام.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F7E5",
+  "theme_color": "#F8F7E5",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
