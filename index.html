@@ -456,12 +456,158 @@
    ========================================================= */
 const WHATSAPP_NUMBER = "212612873811"; // ← change to your number (no +, no spaces)
 
-const PRODUCTS = [
-  {id:1,title:"Sahara Doré",artist:"Youssef El Amrani",cat:"landscape",catLabel:"Paysage",
-   desc:"Une interprétation abstraite des dunes de Merzouga au coucher du soleil. Acrylique sur toile, signée et numérotée.",
-   img:"https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?w=900",
-   sizes:[{l:"40×50",p:1200},{l:"60×80",p:2200},{l:"90×120",p:3800}]},
-  {id:2,title:"Nuit à Fès",artist:"Leila Benjelloun",cat:"abstract",catLabel:"Abstrait",
-   desc:"Les bleus profonds de la médina de Fès retranscrits en touches gestuelles. Pièce unique.",
-   img:"https://images.unsplash.com/photo-1578926288207-a90a5366759d?w=900",
-   sizes:[{l:"50×70",p:1800},{l:"80×100",p:320
+    {
+        id: 1,
+        name: "Classic T-Shirt",
+        price: 29.99,
+        image: "https://via.placeholder.com/300x300?text=T-Shirt",
+        description: "100% cotton, comfortable fit for everyday wear."
+    },
+    {
+        id: 2,
+        name: "Denim Jeans",
+        price: 59.99,
+        image: "https://via.placeholder.com/300x300?text=Jeans",
+        description: "Durable denim with a modern, slim cut."
+    },
+    {
+        id: 3,
+        name: "Running Shoes",
+        price: 89.99,
+        image: "https://via.placeholder.com/300x300?text=Shoes",
+        description: "Lightweight and breathable for your daily runs."
+    }
+];
+
+// =========================================================
+// CART & UI LOGIC
+// =========================================================
+let cart = [];
+
+function addToCart(productId) {
+    const product = PRODUCTS.find(p => p.id === productId);
+    if (!product) return;
+
+    const existingItem = cart.find(item => item.id === productId);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({ ...product, quantity: 1 });
+    }
+    updateCartUI();
+}
+
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    updateCartUI();
+}
+
+function updateCartUI() {
+    const cartItemsContainer = document.getElementById("cart-items");
+    const cartTotalElement = document.getElementById("cart-total");
+    const cartCountElement = document.getElementById("cart-count");
+
+    if (!cartItemsContainer) return;
+
+    cartItemsContainer.innerHTML = "";
+    let total = 0;
+    let count = 0;
+
+    if (cart.length === 0) {
+        cartItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
+        if (cartTotalElement) cartTotalElement.textContent = "0.00";
+        if (cartCountElement) cartCountElement.textContent = "0";
+        return;
+    }
+
+    cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        count += item.quantity;
+
+        const itemElement = document.createElement("div");
+        itemElement.className = "cart-item";
+        itemElement.innerHTML = `
+            <div class="cart-item-details">
+                <strong>${item.name}</strong><br>
+                <small>$${item.price.toFixed(2)} x ${item.quantity}</small>
+            </div>
+            <div class="cart-item-actions">
+                <span>$${itemTotal.toFixed(2)}</span>
+                <button class="btn-remove" onclick="removeFromCart(${item.id})">Remove</button>
+            </div>
+        `;
+        cartItemsContainer.appendChild(itemElement);
+    });
+
+    if (cartTotalElement) cartTotalElement.textContent = total.toFixed(2);
+    if (cartCountElement) cartCountElement.textContent = count;
+}
+
+// =========================================================
+// RENDER PRODUCTS
+// =========================================================
+function renderProducts() {
+    const productList = document.getElementById("product-list");
+    if (!productList) return;
+
+    productList.innerHTML = "";
+
+    PRODUCTS.forEach(product => {
+        const productCard = document.createElement("div");
+        productCard.className = "product-card";
+        productCard.innerHTML = `
+            <img src="${product.image}" alt="${product.name}" class="product-img">
+            <div class="product-info">
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-desc">${product.description}</p>
+                <p class="product-price">$${product.price.toFixed(2)}</p>
+                <button class="btn-add" onclick="addToCart(${product.id})">Add to Cart</button>
+            </div>
+        `;
+        productList.appendChild(productCard);
+    });
+}
+
+// =========================================================
+// WHATSAPP CHECKOUT
+// =========================================================
+function checkoutOnWhatsApp() {
+    if (cart.length === 0) {
+        alert("Your cart is empty! Add some items before checking out.");
+        return;
+    }
+
+    let message = "Hello! I would like to place an order:\n\n";
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        message += `*${index + 1}. ${item.name}*\n`;
+        message += `   Qty: ${item.quantity} | Price: $${item.price.toFixed(2)}\n`;
+        message += `   Subtotal: $${itemTotal.toFixed(2)}\n\n`;
+    });
+
+    message += `------------------------\n`;
+    message += `*Total Amount: $${total.toFixed(2)}*\n\n`;
+    message += "Please let me know the next steps for payment and delivery. Thank you!";
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, "_blank");
+}
+
+// =========================================================
+// INITIALIZATION
+// =========================================================
+document.addEventListener("DOMContentLoaded", () => {
+    renderProducts();
+    updateCartUI();
+    
+    const checkoutBtn = document.getElementById("checkout-btn");
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener("click", checkoutOnWhatsApp);
+    }
+});
